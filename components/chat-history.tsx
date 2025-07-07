@@ -1,12 +1,33 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState, ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Eye, User } from "lucide-react"
+
+interface Message {
+  id: number
+  type: 'user' | 'ai'
+  content: string
+  time: string
+  user?: string
+  isDisliked: boolean
+  details?: string[]
+}
+
+interface Conversation {
+  id: string
+  title: string
+  userName: string
+  time: string
+  isHandedOver: boolean
+  summonCount: number
+  type: string
+  messages: Message[]
+}
 
 // 模拟历史对话数据
 const historyData = [
@@ -17,6 +38,7 @@ const historyData = [
     time: "2025-07-04 13:38:42",
     isHandedOver: true,
     summonCount: 3,
+    type: "好友接入",
     messages: [
       {
         id: 1,
@@ -64,6 +86,7 @@ const historyData = [
     time: "2025-07-04 10:22:15",
     isHandedOver: false,
     summonCount: 1,
+    type: "聊天",
     messages: [
       {
         id: 1,
@@ -95,6 +118,7 @@ const historyData = [
     time: "2025-07-03 16:45:30",
     isHandedOver: true,
     summonCount: 5,
+    type: "聊天",
     messages: [
       {
         id: 1,
@@ -117,7 +141,7 @@ const historyData = [
 ]
 
 interface ChatHistoryProps {
-  onViewDetail: (conversation: any) => void
+  onViewDetail: (conversation: Conversation) => void
 }
 
 export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
@@ -125,34 +149,17 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
 
-  const filteredHistory = historyData.filter((item) => {
-    // 文本搜索
-    if (
-      searchTerm &&
-      !item.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !item.userName.toLowerCase().includes(searchTerm.toLowerCase())
-    ) {
+  const filteredHistory = historyData.filter((conversation) => {
+    if (searchTerm && !conversation.title.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false
     }
 
-    // 时间筛选
-    if (startDate || endDate) {
-      const itemDate = new Date(item.time.split(" ")[0])
+    if (startDate && conversation.time < startDate) {
+      return false
+    }
 
-      if (startDate) {
-        const start = new Date(startDate)
-        if (itemDate < start) {
-          return false
-        }
-      }
-
-      if (endDate) {
-        const end = new Date(endDate)
-        end.setHours(23, 59, 59, 999) // 包含结束日期的整天
-        if (itemDate > end) {
-          return false
-        }
-      }
+    if (endDate && conversation.time > endDate) {
+      return false
     }
 
     return true
@@ -186,7 +193,7 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
           <Input
             placeholder="搜索对话标题或用户名..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -239,6 +246,7 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="font-semibold text-gray-900">对话标题</TableHead>
+              <TableHead className="font-semibold text-gray-900">类型</TableHead>
               <TableHead className="font-semibold text-gray-900">对话人名称</TableHead>
               <TableHead className="font-semibold text-gray-900">时间</TableHead>
               <TableHead className="font-semibold text-gray-900">点踩次数</TableHead>
@@ -251,6 +259,11 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
                 <TableCell className="font-medium">
                   <div className="max-w-xs truncate" title={conversation.title}>
                     {conversation.title}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded inline-block">
+                    {conversation.type}
                   </div>
                 </TableCell>
                 <TableCell>
