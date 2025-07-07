@@ -124,7 +124,6 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
-  const [handoverFilter, setHandoverFilter] = useState("all")
 
   const filteredHistory = historyData.filter((item) => {
     // 文本搜索
@@ -136,7 +135,7 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
       return false
     }
 
-    // 时间筛选 - 替换现有的时间筛选逻辑
+    // 时间筛选
     if (startDate || endDate) {
       const itemDate = new Date(item.time.split(" ")[0])
 
@@ -154,14 +153,6 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
           return false
         }
       }
-    }
-
-    // 人工接入状态筛选
-    if (handoverFilter === "handed" && !item.isHandedOver) {
-      return false
-    }
-    if (handoverFilter === "not-handed" && item.isHandedOver) {
-      return false
     }
 
     return true
@@ -224,22 +215,8 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
             </div>
           </div>
 
-          {/* 人工接入状态筛选 */}
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">接入状态:</label>
-            <select
-              value={handoverFilter}
-              onChange={(e) => setHandoverFilter(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">全部状态</option>
-              <option value="handed">已人工接入</option>
-              <option value="not-handed">未人工接入</option>
-            </select>
-          </div>
-
           {/* 清除筛选按钮 */}
-          {(startDate || endDate || handoverFilter !== "all" || searchTerm) && (
+          {(startDate || endDate || searchTerm) && (
             <Button
               variant="outline"
               size="sm"
@@ -247,7 +224,6 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
                 setSearchTerm("")
                 setStartDate("")
                 setEndDate("")
-                setHandoverFilter("all")
               }}
               className="text-gray-600 hover:text-gray-800"
             >
@@ -265,8 +241,7 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
               <TableHead className="font-semibold text-gray-900">对话标题</TableHead>
               <TableHead className="font-semibold text-gray-900">对话人名称</TableHead>
               <TableHead className="font-semibold text-gray-900">时间</TableHead>
-              <TableHead className="font-semibold text-gray-900">召唤次数</TableHead>
-              <TableHead className="font-semibold text-gray-900">人工接入状态</TableHead>
+              <TableHead className="font-semibold text-gray-900">点踩次数</TableHead>
               <TableHead className="font-semibold text-gray-900">操作</TableHead>
             </TableRow>
           </TableHeader>
@@ -290,14 +265,6 @@ export default function ChatHistory({ onViewDetail }: ChatHistoryProps) {
                 </TableCell>
                 <TableCell className="text-gray-600">{conversation.time}</TableCell>
                 <TableCell className="text-gray-900 font-medium">{conversation.summonCount}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={conversation.isHandedOver ? "destructive" : "secondary"}
-                    className={conversation.isHandedOver ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}
-                  >
-                    {conversation.isHandedOver ? "已接入" : "未接入"}
-                  </Badge>
-                </TableCell>
                 <TableCell>
                   <Button variant="ghost" size="sm" onClick={() => onViewDetail(conversation)}>
                     <Eye className="w-4 h-4 mr-1" />

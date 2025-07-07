@@ -273,7 +273,12 @@ export default function ChatConsultation() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-medium text-gray-900 truncate">{consultation.title}</h3>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">{consultation.title}</h3>
+                      <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        {messages.length}
+                      </div>
+                    </div>
                     <div className="flex items-center space-x-1">
                       {consultation.status === "active" && <div className="w-2 h-2 bg-blue-500 rounded-full"></div>}
                     </div>
